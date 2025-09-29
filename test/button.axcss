@@ -1,0 +1,5 @@
+component Card($color: blue, $size: medium, $radius: 0.5rem) {
+  .root { background: $color; padding: $size; border-radius: $radius; }
+}
+
+ 

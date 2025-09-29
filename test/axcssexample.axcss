@@ -1,0 +1,7 @@
+@import "./button.axcss";
+
+Card.primary {
+  $color: #0af;
+  $size: large;
+  $radius: 0.1rem;
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.build/
+.vscode/
+.DS_Store
+/.axcss/
+EOF
