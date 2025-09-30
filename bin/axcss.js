@@ -5,7 +5,7 @@ import { build } from '../src/commands/build.js';
 import { startDev } from '../src/commands/dev.js'; // <-- Importamos el watcher
 
 program
-  .version('1.0.0')
+  .version('1.0.2')
   .description('AXCSS Compiler - A CSS component compiler');
 
 // Comando build normal
