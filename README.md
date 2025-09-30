@@ -20,7 +20,9 @@ npm install -g axcss
 
 ## Example `.axcss`
 
-`src/components/Button.axcss`:
+### Basic Component Definition
+
+`src/button.axcss`:
 
 ```css
 component Button($color: #07f, $size: 1rem, $variant: primary) {
@@ -41,10 +43,50 @@ Button.primary {
 }
 ```
 
+### Import System
+
+You can import other `.axcss` files using the `@import` directive. This allows you to:
+- Reuse components across different files
+- Organize your styles into logical modules
+- Create component libraries
+
+Example usage:
+
+`src/styles/main.axcss`:
+```css
+/* Import components */
+@import "./button.axcss";
+@import "./card.axcss";
+
+/* Define instances of imported components */
+Button.primary-large {
+  $color: #007bff;
+  $size: 1.5rem;
+  $variant: primary;
+}
+
+Card.primary {
+  $color: #0af;
+  $size: large;
+  $radius: 0.1rem;
+}
+```
+
+#### How Imports Work
+1. When you use `@import`, the content of the imported file is processed first
+2. All component definitions from the imported file become available in the current file
+3. You can create instances of components defined in imported files
+4. The final CSS output will include styles from all imported files
+
+#### Best Practices
+- Use relative paths for imports (e.g., `./components/Button.axcss`)
+- Import files before using their components
+- Organize imports logically (utilities first, then components, then instances)
+
 After `axcss build` you’ll get:
 
-* `.axcss/src/components/Button.css`
-* `.axcss/src/components/Button.axcss.js`
+* `.axcss/src/button.css`
+* `.axcss/src/button.axcss.js`
 * entry in `.axcss/axcssMain.js`
 
 ---
