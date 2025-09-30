@@ -1,6 +1,6 @@
 {
   "name": "axcss",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "bin": {
     "axcss": "./bin/axcss.js"
   },

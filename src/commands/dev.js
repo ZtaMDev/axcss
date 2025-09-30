@@ -1,10 +1,10 @@
 import { watch } from 'chokidar';
 import { build } from './build.js';
-
+import { logger } from '../utils/colors.js';
 let timeout;
 
 export async function startDev() {
-  console.log('Watching .axcss files for changes...');
+  logger.info('Watching .axcss files for changes...');
 
   const watcher = watch('**/*.axcss', { ignored: ['node_modules/**', '.axcss/**'] });
 
@@ -12,10 +12,11 @@ export async function startDev() {
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(async () => {
       try {
-        await build({ silent: true }); // Build silencioso
-        console.log('✅ Build completed.');
+        await build({ silent: false }); // Build silencioso
+        logger.info('Waiting for changes...');
       } catch (err) {
-        console.error('❌ Build failed:', err.message);
+        logger.error('Build failed:', err.message);
+        
       }
     }, 100); // Espera 100ms después del último cambio
   };

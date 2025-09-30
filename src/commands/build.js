@@ -6,6 +6,7 @@ import { dirname } from 'path';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import { processFile } from '../processors/componentProcessor.js';
+import { logger, colors } from '../utils/colors.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,7 +17,7 @@ async function processCSS(content) {
     const result = await postcss([autoprefixer()]).process(content, { from: undefined });
     return result.css;
   } catch (error) {
-    console.error('❌ Error processing CSS:', error);
+    logger.error('Error processing CSS:', error);
     return content;
   }
 }
@@ -24,15 +25,15 @@ async function processCSS(content) {
 export async function build(options = {}) {
   const silent = options.silent ?? false;
   try {
-    if (!silent) console.log('Searching for .axcss files...');
+    if (!silent) logger.info('Searching for .axcss files...');
     
     const files = await glob('**/*.axcss', { ignore: ['node_modules/**', '.axcss/**'] });
     if (files.length === 0) {
-      console.log('ℹ️ No .axcss files found.');
+      logger.info('No .axcss files found.');
       return;
     }
 
-    if (!silent) console.log(`Found ${files.length} .axcss file(s)`);
+    if (!silent) logger.info(`Found ${files.length} .axcss file(s)`);
 
     await fs.mkdir('.axcss', { recursive: true });
 
@@ -49,7 +50,7 @@ export async function build(options = {}) {
         const outputCssPath = path.join('.axcss', file.replace(/\.axcss$/, '.css'));
         await fs.mkdir(path.dirname(outputCssPath), { recursive: true });
         await fs.writeFile(outputCssPath, content, 'utf8');
-        if (!silent) console.log(`Compiled ${file} -> ${outputCssPath}`);
+        if (!silent) logger.compile(`Compiled ${file} -> ${outputCssPath}`);
 
         // Guardamos la ruta relativa
         const varName = path.basename(file, '.axcss');
@@ -67,12 +68,35 @@ export default '${cssRelativePath}';
 
         const proxyPath = outputCssPath.replace(/\.css$/, '.axcss.js');
         await fs.writeFile(proxyPath, proxyContent, 'utf8');
-        if (!silent) console.log(`✅ Proxy JS generated: ${proxyPath}`);
+        if (!silent) logger.proxy(`Proxy JS generated: ${proxyPath}`);
 
         importsMain.push(`import './${proxyPath.replace(/\\/g, '/')}';`);
 
       } catch (error) {
-        if (!silent) console.error(`❌ Error processing ${file}:`, error.message);
+        // Establecer el código de salida a 1 para indicar que hubo un error
+        process.exitCode = 1;
+        
+        if (!silent) {
+          // Para errores de sintaxis, mostrar el mensaje completo
+          if (error.message.startsWith('Syntax errors found:')) {
+            // Mostrar el mensaje de error completo
+            const errorLines = error.message.split('\n');
+            logger.error(`${colors.red}${errorLines[0]}${colors.reset}`);
+            // Mostrar los detalles del error (líneas adicionales)
+            for (let i = 1; i < errorLines.length; i++) {
+              if (errorLines[i].trim()) {
+                console.error(`   ${colors.red}${errorLines[i]}${colors.reset}`);
+              }
+            }
+          } else {
+            // Para otros tipos de errores, mostrar el mensaje normal
+            logger.error(`Error processing file ${file}:`);
+            console.error(`  ${colors.red}${error.message.split('\n')[0]}${colors.reset}`);
+          }
+        }
+        
+        // Continuar con el siguiente archivo en lugar de detenerse
+        continue;
       }
     }
 
@@ -97,10 +121,10 @@ export const axcssMain = ${JSON.stringify(cssPaths, null, 2)};
 
 
     await fs.writeFile('.axcss/axcssMain.js', mainJsContent.trim(), 'utf8');
-    if (!silent) console.log('✅ axcssMain.js generated with automatic import of all .axcss.js files!');
-    if (!silent) console.log('✅ Build completed!');
+    if (!silent) logger.success('axcssMain.js generated with automatic import of all .axcss.js files!');
+    if (!silent) logger.success('Build completed!');
   } catch (error) {
-    if (!silent) console.error('❌ Build failed:', error.message);
+    if (!silent) logger.error(`Build failed: ${error.message}`);
     process.exit(1);
   }
 }

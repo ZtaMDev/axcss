@@ -1,6 +1,7 @@
 // componentProcessor.js
 // Versión que preserva CSS normal + soporta componentes e instancias
 import { promises as fs } from 'fs';
+import { logger } from '../utils/colors.js';
 
 // ----------------- Helpers -----------------
 const isWhitespace = (ch) => /\s/.test(ch);
@@ -33,15 +34,13 @@ async function loadComponentsFromFile(filePath, visited = new Set()) {
   const components = new Map();
   const absPath = path.resolve(filePath);
 
-  if (visited.has(absPath)) return components;
   visited.add(absPath);
 
   let content;
   try {
     content = await fs.readFile(absPath, 'utf8');
   } catch (err) {
-    // Si no se encuentra el archivo importado, no lanzamos (solo advertimos)
-    console.warn(`⚠️ Import file not found: ${filePath} (${absPath}) — skipping import.`);
+    logger.warning(`Import file not found: ${filePath} (${absPath}) — skipping import.`);
     return components;
   }
 
@@ -661,7 +660,7 @@ async function resolveImportsRecursively(content, baseDir, visited = new Set()) 
       importedContent = await fs.readFile(fullPath, 'utf8');
       importedContent = await resolveImportsRecursively(importedContent, path.dirname(fullPath), visited);
     } catch (e) {
-      console.warn(`⚠️ Failed to import "${importPath}": ${e.message}`);
+      logger.warning(` Failed to import "${importPath}": ${e.message}`);
       importedContent = ''; // <--- importante, reemplaza el @import por vacío
     }
 
@@ -685,7 +684,7 @@ export async function processFile(filePath) {
       throw new Error(`Syntax errors found:\n${messages}`);
     } else {
       for (const w of issues.filter(i => i.severity === 'warning')) {
-        console.warn(`⚠️ ${w.message} (line ${w.line}:${w.column})`);
+        logger.warning(`${w.message} (line ${w.line}:${w.column})`);
       }
     }
 
@@ -720,7 +719,7 @@ export async function processFile(filePath) {
     for (const instance of instances) {
       const component = components.get(instance.componentName);
       if (!component) {
-        console.warn(`⚠️ Component "${instance.componentName}" not found for instance "${instance.instanceName}" in ${filePath} — skipping.`);
+        logger.warning(` Component "${instance.componentName}" not found for instance "${instance.instanceName}" in ${filePath} — skipping.`);
         continue;
       }
 
@@ -740,7 +739,7 @@ export async function processFile(filePath) {
       if (instanceCSS) {
         generatedCSS += `/* Instance: ${instance.componentName}.${instance.instanceName} */\n${instanceCSS}\n`;
       } else {
-        console.warn(`⚠️ Generated CSS empty for ${component.name}.${instance.instanceName} — check variables / when conditions.`);
+        logger.warning(` Generated CSS empty for ${component.name}.${instance.instanceName} — check variables / when conditions.`);
       }
     }
 
@@ -753,7 +752,7 @@ export async function processFile(filePath) {
     return final;
 
   } catch (err) {
-    console.error(`❌ Error processing file ${filePath}:`, err);
+    logger.error(`Error processing file ${filePath}:`, err);
     throw err;
   }
 }
@@ -772,7 +771,7 @@ export async function processContentString(content) {
   for (const instance of instances) {
     const component = components.get(instance.componentName);
     if (!component) {
-      console.warn(`⚠️ No component in \"${instance.componentName}\" this is an simple css syntax it doesn't have axcss syntax`);
+      logger.warning(`No component in \"${instance.componentName}\" this is an simple css syntax it doesn't have axcss syntax`);
       continue;
     }
     let base = instance.instanceName.toLowerCase();
