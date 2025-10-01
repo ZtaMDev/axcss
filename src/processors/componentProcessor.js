@@ -1,5 +1,4 @@
 // componentProcessor.js
-// Versión que preserva CSS normal + soporta componentes e instancias
 import { promises as fs } from 'fs';
 import { logger } from '../utils/colors.js';
 
@@ -12,7 +11,7 @@ export function stripCssComments(cssContent) {
   return cssContent.replace(/\/\*[\s\S]*?\*\//g, '').trim();
 }
 
-import path from 'path'; // Asegúrate de que esté al principio del archivo junto con fs
+import path from 'path';
 
 // ----------------- IMPORTS: regex y utilidad para quitar @import del CSS final -----------------
 const IMPORT_REGEX = /@import\s+['"]([^'"]+)['"]\s*;?/g;
@@ -129,7 +128,7 @@ function parseParamList(paramsStr) {
         merged[name] = param.defaultValue;
       } else {
         // Si no hay value en instancia ni default en componente -> error
-        throw new Error(`❌ Default value not defined for $${name} in instance ${componentName}.${instanceName}`);
+        logger.error(`Default value not defined for $${name} in instance ${componentName}.${instanceName}`);
       }
     }
     return merged;
