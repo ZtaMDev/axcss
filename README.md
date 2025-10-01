@@ -245,7 +245,7 @@ createRoot(document.getElementById('root')).render(<App />);
 1. Clone the repo:
 
    ```bash
-   git clone <repo_url>
+   git clone https://github.com/ZtaMDev/axcss
    cd axcss
    ```
 2. Install dependencies:
