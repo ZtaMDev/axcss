@@ -1,4 +1,4 @@
-# AXCSS Compiler
+# AxCSS
 
 AXCSS is a CSS compiler that transforms `.axcss` files into standard CSS. It adds support for **components**, **instances**, **variables**, **conditional `when` blocks**, **recursive imports**, and preserves normal CSS. During `build` it also generates JS proxies (`.axcss.js`) and a global `.axcss/axcssMain.js` so styles can be easily imported/injected from JavaScript (plain JS, React, Vue, etc.).
 
